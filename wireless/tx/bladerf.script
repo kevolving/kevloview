@@ -1,0 +1,7 @@
+
+
+set frequency 1200000000
+set samplerate 1000000
+tx config file=bladerf.iq repeat=10
+tx start
+

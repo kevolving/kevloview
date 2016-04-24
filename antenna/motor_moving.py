@@ -8,13 +8,15 @@ import datetime
 bus = smbus.SMBus(0x01)
 addr = 0x04
 
-now = datetime.datetime.now()
-
-def dmotor(time):
-    
-    tmphour = time / 60
-    tmpmin = time % 60
-    os.system('sh calcSpecifiedTimePosISS.sh "%s %s %s %s %s 0" 35.6,137,10 > res' % (now.year, now.month, now.day, now.hour + tmphour, tmpmin))    
+def dmotor(time, flag, cpos):    
+    now = datetime.datetime.now()    
+    if flag == 0:
+        tmphour = time / 60
+        tmpmin = time % 60
+        os.system('sh calcSpecifiedTimePosISS.sh "%s %s %s %s %s 0" %s,%s,%s > res' % (now.year, now.month, now.day, now.hour + tmphour, tmpmin, cpos[0], cpos[1], cpos[2]))    
+    else:
+        os.system('sh calcSpecifiedTimePosISS.sh "%s %s %s %s %s %s" %s,%s,%s > res' % (now.year, now.month, now.day, now.hour, now.minutes, now.seconds, cpos[0], cpos[1], cpos[2]))
+        
 
     f = file("res")
     res = f.readlines()
@@ -50,11 +52,20 @@ if(len(sys.argv) == 2):
             time.sleep(0.1)
         bus.write_i2c_block_data(addr, 0x01, [int(float(0)), int(float(0))])
         time.sleep(1)
+        for i in range(0, 180, 5):
+            bus.write_i2c_block_data(addr, 0x01, [int(float(i)), int(float(i))])
+            time.sleep(0.1)
+        bus.write_i2c_block_data(addr, 0x01, [int(float(0)), int(float(0))])
+        time.sleep(1)
         
         exit(1)
+    elif(sys.argv[1] == "demo"):
+        for i in range(60):
+            dmotor(i, 0, [35.6, 137, 10])
+            time.sleep(0.1)        
 
 for i in range(600):
-    dmotor(i)
+    dmotor(i, 1, [35.6, 137, 10])
     time.sleep(0.1)
     
 
